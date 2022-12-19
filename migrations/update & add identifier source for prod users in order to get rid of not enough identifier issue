@@ -1,0 +1,61 @@
+-- Script to update the idetifier range for already assigned user. The script will assign each user a new range of batch size 1000.
+
+set role apfodisha;
+with data as (select row_number() over (order by id) row_num, *
+              from users
+              where id in (select assigned_to_user_id from identifier_user_assignment)
+                and organisation_id = 272)
+update identifier_user_assignment
+set identifier_start        = 'H' || (select max(NULLIF(regexp_replace(identifier_start, '\D', '', 'g'), '')::numeric) +
+                                             (row_num * 1000)
+                                      from identifier_user_assignment),
+    identifier_end          = 'H' || (select max(NULLIF(regexp_replace(identifier_end, '\D', '', 'g'), '')::numeric) +
+                                             ((row_num * 1000) + 999)
+                                      from identifier_user_assignment),
+    last_assigned_identifier          = 'H' || (select max(NULLIF(regexp_replace(identifier_end, '\D', '', 'g'), '')::numeric) +
+                                             ((row_num * 1000) + 999)
+                                      from identifier_user_assignment),
+    last_modified_by_id     = (select id from users where username = 'nupoork@apfodisha'),
+    last_modified_date_time = current_timestamp
+from data d
+where d.id = identifier_user_assignment.assigned_to_user_id and identifier_user_assignment.is_voided=false;
+
+
+-- Script to assign identifiers for users dont have it
+
+with data as (select row_number() over (order by id) row_num, *
+              from users
+              where id not in (select assigned_to_user_id from identifier_user_assignment)
+                and organisation_id = 272)
+insert
+into identifier_user_assignment (uuid,
+                                 identifier_source_id,
+                                 assigned_to_user_id,
+                                 identifier_start,
+                                 identifier_end,
+                                 last_assigned_identifier,
+                                 version,
+                                 is_voided,
+                                 organisation_id,
+                                 audit_id,
+                                 created_by_id,
+                                 last_modified_by_id,
+                                 created_date_time,
+                                 last_modified_date_time)
+select uuid_generate_v1(),
+       42,
+       id,
+       'H' || (select max(NULLIF(regexp_replace(identifier_start, '\D','','g'), '')::numeric) + (row_num * 1000)
+               from identifier_user_assignment),
+       'H' || (select max(NULLIF(regexp_replace(identifier_end, '\D','','g'), '')::numeric) + ((row_num * 1000) + 999)
+               from identifier_user_assignment),
+       'H' || (select max(NULLIF(regexp_replace(identifier_end, '\D','','g'), '')::numeric) + ((row_num * 1000) + 999)
+               from identifier_user_assignment),
+       false,
+       272,
+       (create_audit((select id from users where username = 'nupoork@apfodisha'))),
+       (select id from users where username = 'nupoork@apfodisha'),
+       (select id from users where username = 'nupoork@apfodisha'),
+       current_timestamp,
+       current_timestamp
+from data;
