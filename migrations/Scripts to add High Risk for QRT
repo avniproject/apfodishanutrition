@@ -1,0 +1,100 @@
+set role apfodishauat;
+
+-- High risk as "No" for all individual subject types on registration
+update individual
+set observations            = observations ||
+                              '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"a77bd700-1409-4d52-93bc-9fe32c0e169b"}',
+    sync_concept_1_value    = 'a77bd700-1409-4d52-93bc-9fe32c0e169b',
+    last_modified_date_time = current_timestamp + interval '1 millisecond',
+    last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat')
+where organisation_id = 242
+  and subject_type_id = 557;
+
+-- High risk as "Yes/No" for all the individual subjects based on the conditions if any high risk condition exist on program enrolment
+update individual ind
+set observations            =
+        case
+            when pe.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then ind.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"8ebbf088-f292-483e-9084-7de919ce67b7"}'
+            else ind.observations ||
+                 '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"a77bd700-1409-4d52-93bc-9fe32c0e169b"}'
+            end,
+    sync_concept_1_value    =
+        case
+            when pe.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            else 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            end,
+    last_modified_date_time = current_timestamp + interval '1 millisecond',
+    last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat')
+from program_enrolment pe
+where pe.organisation_id = 242
+  and program_id = 340
+  and pe.individual_id = ind.id;
+
+-- High risk as "Yes/No" for all the individual subjects based on the conditions if any high risk condition exist on ANC followup encounter
+update individual ind
+set observations            =
+        case
+            when (pe.observations ->> '3981ddb0-30a3-43d2-9564-16ae9cc0e25e')::numeric < 37
+                then ind.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"8ebbf088-f292-483e-9084-7de919ce67b7"}'
+            when (pe.observations ->> '68bc6e51-eb49-4816-b78b-2427bbab8d92')::numeric < 7
+                then ind.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"8ebbf088-f292-483e-9084-7de919ce67b7"}'
+            when pe.observations ->> '96b167e1-2d98-40b9-af04-8e4f64f9999a' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then ind.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"8ebbf088-f292-483e-9084-7de919ce67b7"}'
+            when jsonb_exists(pe.observations, '9a7f284b-251d-459b-97d9-929ed280b3d3')
+                then ind.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"8ebbf088-f292-483e-9084-7de919ce67b7"}'
+            else ind.observations ||
+                 '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"a77bd700-1409-4d52-93bc-9fe32c0e169b"}'
+            end,
+    sync_concept_1_value    =
+        case
+            when (pe.observations ->> '3981ddb0-30a3-43d2-9564-16ae9cc0e25e')::numeric < 37
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when (pe.observations ->> '68bc6e51-eb49-4816-b78b-2427bbab8d92')::numeric < 7
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when pe.observations ->> '96b167e1-2d98-40b9-af04-8e4f64f9999a' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when jsonb_exists(pe.observations, '9a7f284b-251d-459b-97d9-929ed280b3d3')
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            else 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            end,
+    last_modified_date_time = current_timestamp + interval '1 millisecond',
+    last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat')
+from program_encounter pe
+where pe.organisation_id = 242
+  and encounter_type_id = 1398
+  and pe.individual_id = ind.id;
+
+-- High risk as "Yes/No" for all the individual subjects based on the conditions if any high risk condition exist on Child followup encounter
+update individual ind
+set observations            =
+        case
+            when pe.observations ->> 'efeb0a0b-aea4-4af1-9bc4-37d86bc865a1' = '4b855734-921c-4796-a752-39b3ede1c66c'
+                then ind.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"8ebbf088-f292-483e-9084-7de919ce67b7"}'
+            when pe.observations ->> '2a2027c1-cec9-4237-a53a-80d6b1047979' = '7d0229c1-e69e-4cac-8937-cdd48c8ed9dd'
+                then ind.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"8ebbf088-f292-483e-9084-7de919ce67b7"}'
+            else ind.observations ||
+                 '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":"a77bd700-1409-4d52-93bc-9fe32c0e169b"}'
+            end,
+    sync_concept_1_value    =
+        case
+            when pe.observations ->> 'efeb0a0b-aea4-4af1-9bc4-37d86bc865a1' = '4b855734-921c-4796-a752-39b3ede1c66c'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when pe.observations ->> '2a2027c1-cec9-4237-a53a-80d6b1047979' = '7d0229c1-e69e-4cac-8937-cdd48c8ed9dd'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            else 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            end,
+    last_modified_date_time = current_timestamp + interval '1 millisecond',
+    last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat')
+from program_encounter pe
+where pe.organisation_id = 242
+  and encounter_type_id = 1400
+  and pe.individual_id = ind.id;
