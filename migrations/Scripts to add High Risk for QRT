@@ -98,3 +98,55 @@ from program_encounter pe
 where pe.organisation_id = 242
   and encounter_type_id = 1400
   and pe.individual_id = ind.id;
+ 
+ 
+
+
+
+
+-- set sync_concept_1_value in pregnancy program
+update program_enrolment 
+set sync_concept_1_value = 
+        case
+            when pe.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            else 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            end,
+    last_modified_date_time = current_timestamp + interval '1 millisecond',
+    last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat'),
+    manual_update_history = 'added sync_concept_1_value'
+where program_id = 340 and organisation_id  = 242;
+
+-- set sync_concept_1_value in anc followup encounter
+update program_encounter pe
+set sync_concept_1_value    =
+        case
+            when (pe.observations ->> '3981ddb0-30a3-43d2-9564-16ae9cc0e25e')::numeric < 37
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when (pe.observations ->> '68bc6e51-eb49-4816-b78b-2427bbab8d92')::numeric < 7
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when pe.observations ->> '96b167e1-2d98-40b9-af04-8e4f64f9999a' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when jsonb_exists(pe.observations, '9a7f284b-251d-459b-97d9-929ed280b3d3')
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            else 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            end,
+    last_modified_date_time = current_timestamp + interval '1 millisecond',
+    last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat'),
+    manual_update_history = 'added sync_concepet_1_value'
+where pe.encounter_type_id = 1398 and pe.organisation_id = 242;
+
+-- set sync_concept_1_value in child_followup_encounter
+update program_encounter pe 
+set sync_concept_1_value    =
+        case
+            when pe.observations ->> 'efeb0a0b-aea4-4af1-9bc4-37d86bc865a1' = '4b855734-921c-4796-a752-39b3ede1c66c'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when pe.observations ->> '2a2027c1-cec9-4237-a53a-80d6b1047979' = '7d0229c1-e69e-4cac-8937-cdd48c8ed9dd'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            else 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            end,
+    last_modified_date_time = current_timestamp + interval '1 millisecond',
+    last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat'),
+    manual_update_history = 'added sync_concept_1_value'
+where pe.encounter_type_id = 1400 and pe.organisation_id = 242;
