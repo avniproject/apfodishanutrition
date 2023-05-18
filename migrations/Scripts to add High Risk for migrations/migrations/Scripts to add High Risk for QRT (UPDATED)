@@ -1,0 +1,228 @@
+-- High risk as "No" for all individual subject types on registration
+update individual
+set observations            = observations ||
+                              '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}', -- No
+    sync_concept_1_value    = 'a77bd700-1409-4d52-93bc-9fe32c0e169b',                                              -- No
+    last_modified_date_time = current_timestamp + interval '1 millisecond',
+    last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat'),
+    manual_update_history   = 'High risk as "No" for all individual subject types on registration'
+where organisation_id = 242
+  and subject_type_id = 557;
+
+-- High risk as "Yes/No" for all the program enrolments(Pregnancy program) based on the checkpoint(MCP red flag)
+update program_enrolment
+set observations          =
+        case
+            when observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'-- Red Flag (refer MCP card) - yes -> high risk - yes
+                then observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            else observations ||
+                 '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
+            end,
+    sync_concept_1_value  =
+        case
+            when observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            else 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            end,
+    last_modified_by_id   = (select id from users where username = 'beulah@apfodishauat'),
+    manual_update_history = 'updating program_enrolment table based on checkpoint(MCP red flag)'
+where organisation_id = 242
+  and program_id = 340;
+  
+-- High risk as "Yes/No" for all the individual subjects based on the conditions if any high risk condition exist on its corresponding program enrolment (Pregnancy program)
+update individual ind
+set observations          =
+        case
+            when pe.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            else pe.observations ||
+                 '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
+            end,
+    sync_concept_1_value  =
+        case
+            when pe.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            else 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            end,
+    last_modified_by_id   = (select id from users where username = 'beulah@apfodishauat'),
+    manual_update_history = 'updating individual table based on checkpoint(MCP red flag) of pregnancy program'
+from program_enrolment pe
+where pe.organisation_id = 242
+  and program_id = 340
+  and pe.individual_id = ind.id;
+
+-- High risk as "Yes/No" for all program_encounter (Pregnancy program) based on checkpoints (Weight is less than 37kg, Height is less than 147cm, Red flag as per MCP card, Gravida is more than or equal to 4, Age is greater than 35 years, HB is less than 7 g/dL, Geographical high risk, High risk condition exist)
+update program_encounter enc
+set observations          =
+        case
+            when (enc.observations ->> '3981ddb0-30a3-43d2-9564-16ae9cc0e25e')::numeric < 37
+                then enc.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            when (enl.observations ->> 'a0059121-6bd2-414b-bcdc-a64bf27bc364')::numeric < 148
+                then enc.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            when enl.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then enc.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            when (enl.observations ->> 'c49442e4-539f-4d73-9590-0deb8c8dd3b9')::numeric >= 4
+                then enc.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            when (enl.observations ->> 'ad71b3c0-4d95-4f2b-892c-75ab40cf6442')::numeric >= 35
+                then enc.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            when (enc.observations ->> '68bc6e51-eb49-4816-b78b-2427bbab8d92')::numeric < 7
+                then enc.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            when enc.observations ->> '96b167e1-2d98-40b9-af04-8e4f64f9999a' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then enc.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            when jsonb_exists(enc.observations, '9a7f284b-251d-459b-97d9-929ed280b3d3')
+                then enc.observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            else enc.observations ||
+                 '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
+            end,
+    sync_concept_1_value  =
+        case
+            when (enc.observations ->> '3981ddb0-30a3-43d2-9564-16ae9cc0e25e')::numeric < 37
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when (enl.observations ->> 'a0059121-6bd2-414b-bcdc-a64bf27bc364')::numeric < 148
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when enl.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when (enl.observations ->> 'c49442e4-539f-4d73-9590-0deb8c8dd3b9')::numeric >= 4
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when (enl.observations ->> 'ad71b3c0-4d95-4f2b-892c-75ab40cf6442')::numeric >= 35
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when (enc.observations ->> '68bc6e51-eb49-4816-b78b-2427bbab8d92')::numeric < 7
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when enc.observations ->> '96b167e1-2d98-40b9-af04-8e4f64f9999a' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when jsonb_exists(enc.observations, '9a7f284b-251d-459b-97d9-929ed280b3d3')
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            else 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            end,
+    last_modified_by_id   = (select id from users where username = 'beulah@apfodishauat'),
+    manual_update_history = 'updating program_encounter table based on checkpoints (Weight is less than 37kg, Height is less than 147cm, Red flag as per MCP card, Gravida is more than or equal to 4, Age is greater than 35 years, HB is less than 7 g/dL, Geographical high risk, High risk condition exist)'
+from program_enrolment enl
+where enc.organisation_id = 242
+  and encounter_type_id = 1398
+  and enl.individual_id = enc.individual_id
+  and enl.program_id = 340;
+
+-- High risk as "Yes/No" for all the program enrolments(Pregnancy program) based on checkpoints (Weight is less than 37kg, Height is less than 147cm, Red flag as per MCP card, Gravida is more than or equal to 4, Age is greater than 35 years, HB is less than 7 g/dL, Geographical high risk, High risk condition exist)
+with encountering as (select pe.individual_id,
+                             row_number()
+                             over (partition by pe.individual_id order by pe.encounter_date_time desc nulls last) visit,
+                             pe.program_enrolment_id,
+                             pe.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a'                           obsvalue,
+                             sync_concept_1_value
+                      from program_encounter pe
+                      where pe.encounter_type_id = 1398
+                        and pe.organisation_id = 242)
+update program_enrolment enl
+set observations          = JSONB_SET(enl.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}', obsvalue::jsonb),
+    sync_concept_1_value  = enc.sync_concept_1_value,
+    manual_update_history = 'updating program_enrolment table based on checkpoints (Weight is less than 37kg, Height is less than 147cm, Red flag as per MCP card, Gravida is more than or equal to 4, Age is greater than 35 years, HB is less than 7 g/dL, Geographical high risk, High risk condition exist)',
+    last_modified_by_id   = (select id from users where username = 'beulah@apfodishauat')
+from encountering enc
+where enl.id = enc.program_enrolment_id
+  and enl.program_id = 340
+  and enl.organisation_id = 242
+  and visit = 1;
+
+-- High risk as "Yes/No" for all the individual subjects(Pregnancy program) based on checkpoints (Weight is less than 37kg, Height is less than 147cm, Red flag as per MCP card, Gravida is more than or equal to 4, Age is greater than 35 years, HB is less than 7 g/dL, Geographical high risk, High risk condition exist)
+with encountering as (select pe.individual_id,
+                             row_number()
+                             over (partition by pe.individual_id order by pe.encounter_date_time desc nulls last) visit,
+                             pe.program_enrolment_id,
+                             pe.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a'                           obsvalue,
+                             sync_concept_1_value
+                      from program_encounter pe
+                      where pe.encounter_type_id = 1398
+                        and pe.organisation_id = 242)
+update individual ind
+set observations          = JSONB_SET(ind.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}', obsvalue::jsonb),
+    sync_concept_1_value  = enc.sync_concept_1_value,
+    manual_update_history = 'updating individual table based on checkpoints (Weight is less than 37kg, Height is less than 147cm, Red flag as per MCP card, Gravida is more than or equal to 4, Age is greater than 35 years, HB is less than 7 g/dL, Geographical high risk, High risk condition exist)',
+    last_modified_by_id   = (select id from users where username = 'beulah@apfodishauat')
+from encountering enc
+where ind.id = enc.individual_id
+  and ind.subject_type_id = 557
+  and ind.organisation_id = 242
+  and visit = 1;
+
+-- High risk as "Yes/No" for all the program encounters based on the latest sync attribute's observation
+  --
+  --
+  --
+
+-- High risk as "No" for all program enrolments (child program)  
+update public.program_enrolment
+set observations          = observations ||
+                            '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}', -- No
+    sync_concept_1_value  = 'a77bd700-1409-4d52-93bc-9fe32c0e169b',                                              -- No
+    manual_update_history = 'High risk as "No" for all program enrolments (child program)',
+    last_modified_by_id   = (select id from users where username = 'beulah@apfodishauat')
+where program_id = 341
+  and organisation_id = 242;  
+
+-- High risk as "Yes/No" for all program_encounter (Child program) based on checkpoints (Weight for Height Status, Weight for age Status)  
+update program_encounter pe
+set observations          =
+        case
+            when pe.observations ->> 'efeb0a0b-aea4-4af1-9bc4-37d86bc865a1' = '4b855734-921c-4796-a752-39b3ede1c66c'
+                then observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            when pe.observations ->> '2a2027c1-cec9-4237-a53a-80d6b1047979' = '7d0229c1-e69e-4cac-8937-cdd48c8ed9dd'
+                then observations ||
+                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            else observations ||
+                 '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
+            end,
+    sync_concept_1_value  =
+        case
+            when pe.observations ->> 'efeb0a0b-aea4-4af1-9bc4-37d86bc865a1' = '4b855734-921c-4796-a752-39b3ede1c66c'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            when pe.observations ->> '2a2027c1-cec9-4237-a53a-80d6b1047979' = '7d0229c1-e69e-4cac-8937-cdd48c8ed9dd'
+                then '8ebbf088-f292-483e-9084-7de919ce67b7'
+            else 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            end,
+    last_modified_by_id   = (select id from users where username = 'beulah@apfodishauat'),
+    manual_update_history = 'updating program_encounter table based on checkpoint(Weight for Height Status, Weight for age Status)'
+where organisation_id = 242
+  and encounter_type_id = 1400;
+  
+-- High risk as "Yes/No" for all the program enrolments(Child program) based on checkpoints (Weight for Height Status, Weight for age Status)
+with encountering as (select pe.individual_id,
+                             row_number()
+                             over (partition by pe.individual_id order by pe.encounter_date_time desc nulls last) visit,
+                             pe.program_enrolment_id,
+                             pe.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a'                           obsvalue,
+                             sync_concept_1_value
+                      from program_encounter pe
+                      where pe.encounter_type_id = 1400
+                        and pe.organisation_id = 242)
+update program_enrolment enl
+set observations          = JSONB_SET(enl.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}', obsvalue::jsonb),
+    sync_concept_1_value  = enc.sync_concept_1_value,
+    manual_update_history = 'updating program_enrolment table based on checkpoints (Weight for Height Status, Weight for age Status)',
+    last_modified_by_id   = (select id from users where username = 'beulah@apfodishauat')
+from encountering enc
+where enl.id = enc.program_enrolment_id
+  and enl.program_id = 341
+  and enl.organisation_id = 242
+  and visit = 1;
+
+-- High risk as "Yes/No" for all the related group subjects
+update public.individual ind
+set sync_concept_1_value = (select sync_concept_1_value from ind where ind.id = gs.member_subject_id)
+from group_subject gs
+where gs.group_subject_id = ind.id;
+  
+-- High risk to be updated in group subject table as well
+  
+  
+  
