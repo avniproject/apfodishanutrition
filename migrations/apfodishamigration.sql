@@ -49,9 +49,7 @@ set observations          =
         case
             when observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'-- Red Flag (refer MCP card) - yes -> high risk - yes
                 then observations ||
-                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
-            else observations ||
-                 '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
+                     '{"9a7f284b-251d-459b-97d9-929ed280b3d3":["b9b4ac92-2aea-43d0-9d1c-bc7fd5026c44"]}'
             end,
     sync_concept_1_value  =
         case
@@ -67,7 +65,7 @@ where organisation_id = (select id from public.organisation o where name = 'APF 
  
 select id,
 observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' as Red_Flag,
-observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' as High_risk,
+observations ->> '9a7f284b-251d-459b-97d9-929ed280b3d3' as High_risk_condition,
 sync_concept_1_value 
 from public.program_enrolment pe 
 where organisation_id = (select id from public.organisation o where name = 'APF Odisha UAT' limit 1)
@@ -83,7 +81,7 @@ set observations          =
             when pe.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'
                 then observations ||
                      '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
-            else pe.observations ||
+            else observations ||
                  '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
             end,
     sync_concept_1_value  =
@@ -103,7 +101,7 @@ where pe.organisation_id = (select id from public.organisation o where name = 'A
 select
     ind.id,
     ind.observations->>'be0ab05f-b0f3-43ec-b598-fdde0679104a' as high_risk,
-    pe.observations->>'be0ab05f-b0f3-43ec-b598-fdde0679104a'as high_risk,
+    pe.observations->>'9a7f284b-251d-459b-97d9-929ed280b3d3'as high_risk_condition,
     ind.sync_concept_1_value,
     pe.sync_concept_1_value,
     ind.manual_update_history   
@@ -120,27 +118,27 @@ set observations          =
         case
             when (enc.observations ->> '3981ddb0-30a3-43d2-9564-16ae9cc0e25e')::numeric < 37        -- weight of women  in encounter
                 then enc.observations ||
-                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+                     '{"9a7f284b-251d-459b-97d9-929ed280b3d3":["ee723b88-6094-40b2-8db2-16368ae66f4c"]}'
             when (enl.observations ->> 'a0059121-6bd2-414b-bcdc-a64bf27bc364')::numeric < 148        -- height of women in enrolment
                 then enc.observations ||
-                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+                     '{"9a7f284b-251d-459b-97d9-929ed280b3d3":["3f36ab23-e475-48d9-9bf9-556cab575303"]}'
             when enl.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '8ebbf088-f292-483e-9084-7de919ce67b7'     -- Red Flag (refer MCP card) in enrolment
                 then enc.observations ||
-                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}' 
+                     '{"9a7f284b-251d-459b-97d9-929ed280b3d3":["b9b4ac92-2aea-43d0-9d1c-bc7fd5026c44"]}' 
             when (enl.observations ->> 'c49442e4-539f-4d73-9590-0deb8c8dd3b9')::numeric >= 4  -- Gravida (the number of pregnancies the woman has had) in enrolment
                 then enc.observations ||
-                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
-            when ind.age >= 35        
+                     '{"9a7f284b-251d-459b-97d9-929ed280b3d3":["5a33dde5-f5f4-49ff-acc1-3d7ede26dc52"]}'
+            when ind.age >= 35                                                                   -- age grater than 35
                 then enc.observations ||
-                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+                     '{"9a7f284b-251d-459b-97d9-929ed280b3d3":["ad71b3c0-4d95-4f2b-892c-75ab40cf6442"]}'
             when (enc.observations ->> '68bc6e51-eb49-4816-b78b-2427bbab8d92')::numeric < 7   -- HB in encounter
                 then enc.observations ||
-                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+                     '{"9a7f284b-251d-459b-97d9-929ed280b3d3":["6e277f82-5822-4ac3-8a5a-d1ad21a79c00"]}'
             when enc.observations ->> '96b167e1-2d98-40b9-af04-8e4f64f9999a' = '8ebbf088-f292-483e-9084-7de919ce67b7' -- Pregnancy geographically high risk in encounter
                 then enc.observations ||
-                     '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
-            else enc.observations ||
-                 '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
+                     '{"9a7f284b-251d-459b-97d9-929ed280b3d3":["3e21a6f4-6727-44b3-9b7e-148ce9ad77fd"]}'
+            -- else enc.observations ||
+            --      '{"9a7f284b-251d-459b-97d9-929ed280b3d3":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
             end,
     sync_concept_1_value  =
         case
@@ -171,7 +169,7 @@ where enl.individual_id = enc.individual_id
   and encounter_type_id = (select id from public.encounter_type et where name = 'ANC' and organisation_id = (select id from public.organisation o where name = 'APF Odisha UAT' limit 1) );
   
 
-select enc.id,enc.observations->>'be0ab05f-b0f3-43ec-b598-fdde0679104a' as high_risk, 
+select enc.id,enc.observations->>'9a7f284b-251d-459b-97d9-929ed280b3d3' as High_risk_condition, 
      enc.sync_concept_1_value   
 from public.program_encounter enc 
 join public.program_enrolment enl on enc.program_enrolment_id = enl.id 
@@ -186,13 +184,17 @@ with encountering as (select pe.individual_id,
                              row_number()
                              over (partition by pe.individual_id order by pe.encounter_date_time desc nulls last) visit,
                              pe.program_enrolment_id,
-                             pe.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a'                           obsvalue,
+                             pe.observations -> '9a7f284b-251d-459b-97d9-929ed280b3d3'                           obsvalue,
                              sync_concept_1_value
                       from program_encounter pe
                       where pe.encounter_type_id = (select id from public.encounter_type et where name = 'ANC' and organisation_id = (select id from public.organisation o where name = 'APF Odisha UAT' limit 1) )
                         and pe.organisation_id =(select id from public.organisation o where name = 'APF Odisha UAT' limit 1)  )
 update individual ind
-set observations          = JSONB_SET(ind.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}', obsvalue::jsonb),
+set observations          = case when jsonb_array_length(obsvalue) > 0   
+                                    then  observations ||
+                                        '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+                                    else  observations ||
+                                        '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
     sync_concept_1_value  = enc.sync_concept_1_value,
     manual_update_history = 'updating individual table based on checkpoints (Weight is less than 37kg, Height is less than 147cm, Red flag as per MCP card, Gravida is more than or equal to 4, Age is greater than 35 years, HB is less than 7 g/dL, Geographical high risk, High risk condition exist)',
     last_modified_by_id   = (select id from users where username = 'beulah@apfodishauat')
@@ -208,13 +210,14 @@ with encountering as (select pe.individual_id,
                              row_number()
                              over (partition by pe.individual_id order by pe.encounter_date_time desc nulls last) visit,
                              pe.program_enrolment_id,
-                             pe.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a'                           obsvalue,
+                             pe.observations -> '9a7f284b-251d-459b-97d9-929ed280b3d3'                           obsvalue,
                              sync_concept_1_value
                       from program_encounter pe
                       where pe.encounter_type_id = (select id from public.encounter_type et where name = 'ANC' and organisation_id = (select id from public.organisation o where name = 'APF Odisha UAT' limit 1) )
                         and pe.organisation_id =(select id from public.organisation o where name = 'APF Odisha UAT' limit 1)  )
 select ind.id,
        ind.observations->>'be0ab05f-b0f3-43ec-b598-fdde0679104a',
+       obsvalue,
        ind.sync_concept_1_value,
        ind.manual_update_history,
        ind.last_modified_date_time 
@@ -228,7 +231,8 @@ where ind.subject_type_id = (select id from public.subject_type st where  name =
 
 -- 6. set program_enrolment observation and sync_concept_1_value based on individual
 update public.program_enrolment pe 
-set observations = JSONB_SET(pe.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}', ind.observations->>'be0ab05f-b0f3-43ec-b598-fdde0679104a'::jsonb),
+set 
+    -- observations = JSONB_SET(pe.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}', ind.observations->>'be0ab05f-b0f3-43ec-b598-fdde0679104a'::jsonb),
     sync_concept_1_value = ind.sync_concept_1_value
     last_modified_date_time = current_timestamp + interval '1 millisecond',
     last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat'), 
@@ -249,8 +253,9 @@ and pe.organisation_id = (select id from public.organisation o where name = 'APF
 
 -- 7. set program_encounter observation and sync_concept_1_value based on program_enrolment
 update public.program_encounter  enc 
-set observations = JSONB_SET(enc.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}', enl.observations->>'be0ab05f-b0f3-43ec-b598-fdde0679104a'::jsonb),
-    sync_concept_1_value = enl.sync_concept_1_value
+set 
+    -- observations = JSONB_SET(enc.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}', enl.observations->>'be0ab05f-b0f3-43ec-b598-fdde0679104a'::jsonb),
+    sync_concept_1_value = enl.sync_concept_1_value,
     last_modified_date_time = current_timestamp + interval '1 millisecond',
     last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat'), 
     manual_update_history = 'changed observation and sync_concept_1_value based on individuals',
@@ -270,8 +275,9 @@ and enc.organisation_id = (select id from public.organisation o where name = 'AP
 -- child
 -- 8. set program_enrollment observation and sync_concept_1 value as no
 update public.program_enrolment
-set observations          = observations ||
-                            '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}', -- No
+set 
+    -- observations          = observations ||
+    --                         '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}', -- No
     sync_concept_1_value  = 'a77bd700-1409-4d52-93bc-9fe32c0e169b',                                              -- No
     manual_update_history = 'High risk as "No" for all program enrolments (child program)',
     last_modified_by_id   = (select id from users where username = 'beulah@apfodishauat')
