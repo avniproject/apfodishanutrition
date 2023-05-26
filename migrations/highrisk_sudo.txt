@@ -1,0 +1,74 @@
+1. Program encounters - If there is a non-empty array on encounter type 'ANC' for concept "High Risk Conditions", then add an observation "High Risk" = "yes". If not, add "High Risk" = no.
+                        for child Weight for Height Status == "SAM" or  Weight for age Status == "Severely Underweight"
+
+-- for pregnancy
+update public_encounter check High Risk Conditions(coded concept) column
+if size_of(High Risk Conditions) > 0
+    set High risk as yes
+else
+    set High risk as no
+
+-- for child
+update public_encounter
+check if Weight for Height Status == "SAM" or  Weight for age Status == "Severely Underweight"
+        set High risk as yes
+else
+    set High risk as no
+
+2. Program enrolment - Populate the latest (by encounter date time) value of "High Risk" in program encounters of type ANC to the program enrolment
+                       for child take child Followup
+
+-- for pregnancy and for child
+write a cte with row_number patition via encounter_date_time desc
+take row_number = 1 and join with program enrollment
+update program enrolment
+    set if encounter has high risk then encounter has high risk as yes
+        else enrolment has high risk as no
+
+3. Program enrolment - If High risk not available then set as High risk no
+
+update program_enrolment
+    set if high risk not available then set high risk as no
+
+
+4. Individual - Populate the latest (by enrolment date time) value of High Risk from program enrolment into observations of registration
+
+write a cte to with row_number partition via enrollment_date_time desc
+take row_number = 1 and join individual
+update individual
+     set if encounter has high risk yes then individual high risk as yes
+     else
+         high risk as no
+
+5. Individual - If High risk not available then set as High risk no
+
+update individual
+      set if high risk not available then set high risk as no
+
+
+6. Sync attributes - Populate sync attributes of all individual, program_enrolment and program_encounter tables with the "High Risk" observation on individual. Here, do not limit to specific programs or encounter types or voided
+
+--  for individual
+update individual
+set sync
+    if high risk as yes then yes
+else no
+
+-- for enrollment
+update program_enrolment join with individual
+set sync
+    if individual sync is yes then yes
+    else no
+
+-- for encounter
+update program_encounter join with individual
+set sync
+    if individual sync is yes then yes
+    else no
+
+
+
+7. Group Subject - Set sync concept value based on member subject
+
+update group Subject join with individual
+      set sync = individual sync value
