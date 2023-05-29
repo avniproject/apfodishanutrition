@@ -4,8 +4,7 @@
 -- for pregnancy
 update public.program_encounter pe
 set observations =
-           case pe.observations->'9a7f284b-251d-459b-97d9-929ed280b3d3' notnull then              -- high risk condition
-           when
+           case when pe.observations->'9a7f284b-251d-459b-97d9-929ed280b3d3' notnull or pe.observations->'9a7f284b-251d-459b-97d9-929ed280b3d3' = '[]' then              -- high risk condition
              observations || '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'   -- high risk  yes
            else
              observations || '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'   -- high risk no
@@ -169,7 +168,7 @@ set sync_concept_1_value =
             then '8ebbf088-f292-483e-9084-7de919ce67b7'
         end,
         manual_update_history = 'sync_concept_1_value added based on high risk',
-        last_modified_date_time = current_timestamp + interval '1 millisecond',
+        last_modified_date_time = current_timestamp + ((random() * 10 + 1) * interval '1 millisecond'),
         last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat')
 where organisation_id = (select id from organisation o where "name" = 'APF Odisha' limit 1)
 and subject_type_id = (select id from public.subject_type st where name = 'Individual' limit 1);
@@ -187,7 +186,7 @@ where organisation_id = (select id from organisation o where "name" = 'APF Odish
 update public.program_enrolment enl
 set sync_concept_1_value =  ind.sync_concept_1_value ,
     manual_update_history = 'sync_concept_1_value added based on high risk',
-    last_modified_date_time = current_timestamp + interval '1 millisecond',
+    last_modified_date_time = current_timestamp + ((random() * 10 + 1) * interval '1 millisecond'),
     last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat')
 from public.individual ind
 where ind.organisation_id = (select id from organisation o where "name" = 'APF Odisha' limit 1)
@@ -210,7 +209,7 @@ and (pe.program_id =(select id from public."program" p where name = 'Child')
 update public.program_encounter enc
 set sync_concept_1_value =  ind.sync_concept_1_value ,
     manual_update_history = 'sync_concept_1_value added based on high risk',
-    last_modified_date_time = current_timestamp + interval '1 millisecond',
+    last_modified_date_time = current_timestamp + ((random() * 10 + 1) * interval '1 millisecond'),
     last_modified_by_id     = (select id from users where username = 'beulah@apfodishauat')
 from public.individual ind
 where ind.organisation_id = (select id from organisation o where "name" = 'APF Odisha' limit 1)
