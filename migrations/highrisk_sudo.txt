@@ -65,7 +65,7 @@ set sync
 
 
 
-7. Group Subject - Set sync concept value based on member subject
+7. Group Subject - Set sync concept value as no
 
 update group Subject  
       set sync as no
