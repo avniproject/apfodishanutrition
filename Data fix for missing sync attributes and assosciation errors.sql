@@ -1,3 +1,4 @@
+------------------------------------------------------------------- Encounter updates --------------------------------------------------------------------------------
 set role apfodishauat;
 
 SELECT *
@@ -86,6 +87,186 @@ WHERE pe.id IN (SELECT id
                   AND encounter_date_time IS NOT NULL);
 
 -- 13
+
+------------------------------------------------------------------- Encounter updates end--------------------------------------------------------------------------------
+
+
+
+
+------------------------------------------------------------------- Enrolment updates --------------------------------------------------------------------------------
+
+set role apfodishauat;
+
+-- Observations that don't have high risk status in enrolments.
+select count(*)
+from public.program_enrolment
+where observations::text not like '%be0ab05f-b0f3-43ec-b598-fdde0679104a%'; -- 1665 enrolments
+
+select * from program;
+-- 341 Child
+-- 340 Pregnancy
+
+-- Query to update Pregnancy enrolment:
+
+WITH LatestEncounter AS (SELECT enl.id,
+                                coalesce(pe.observations -> 'be0ab05f-b0f3-43ec-b598-fdde0679104a',
+                                         null)                                                                                                AS high_risk_value,
+                                ROW_NUMBER()
+                                OVER (PARTITION BY enl.id ORDER BY coalesce(pe.encounter_date_time, enl.enrolment_date_time) DESC NULLS LAST) AS rn
+                         FROM public.program_enrolment enl
+                                  left join program_encounter pe
+                                            on enl.id = pe.program_enrolment_id and pe.encounter_type_id = 1398
+)
+UPDATE public.program_enrolment enl
+SET observations            =
+        CASE
+            -- If there's a corresponding ANC encounter, use its High risk value
+            WHEN le.high_risk_value IS NOT NULL THEN
+                    enl.observations ||
+                    JSONB_SET(enl.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}', high_risk_value)
+            -- If there's no ANC but there's a Red Flag in enrolment, set High risk to what is there in Red Flag observation
+            WHEN enl.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' IS NOT NULL
+                and enl.observations ->> '72f8785c-f064-4549-ab45-47defa40f5fb' = '"8ebbf088-f292-483e-9084-7de919ce67b7"'
+                then
+                    enl.observations ||
+                    '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["8ebbf088-f292-483e-9084-7de919ce67b7"]}'
+            -- Otherwise, set High risk to no
+            ELSE
+                    enl.observations ||
+                    '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
+            END,
+    last_modified_date_time = now(),
+    last_modified_by_id     = (select id from users where username = 'nupoork@apfodishauat'),
+    manual_update_history   = 'Fixing missing high risk sync attributes'
+FROM LatestEncounter le
+WHERE enl.id = le.id
+  AND le.rn = 1
+  AND enl.observations::text not like '%be0ab05f-b0f3-43ec-b598-fdde0679104a%'
+  and program_id =340;
+
+-- 1,665 rows affected
+
+
+-- Query to update Child enrolment:
+WITH LatestEncounter AS (SELECT pe.program_enrolment_id,
+                                pe.observations -> 'be0ab05f-b0f3-43ec-b598-fdde0679104a'                                   AS high_risk_value,
+                                ROW_NUMBER()
+                                OVER (PARTITION BY pe.program_enrolment_id ORDER BY pe.encounter_date_time DESC NULLS LAST) AS rn
+                         FROM public.program_encounter pe
+                         WHERE pe.encounter_type_id = 1400)
+UPDATE public.program_enrolment enl
+SET observations =
+        CASE
+            -- If there's a corresponding child followup encounter, use its High risk value
+            WHEN le.high_risk_value IS NOT NULL THEN
+                    enl.observations ||
+                    JSONB_SET(enl.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}', high_risk_value)
+            -- Otherwise, set High risk to no
+            ELSE
+                    enl.observations || '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
+            END,
+    last_modified_date_time = now(),
+    last_modified_by_id = (select id from users where username ='nupoork@apfodishauat'),
+    manual_update_history = 'Fixing missing high risk sync attributes'
+FROM LatestEncounter le
+WHERE enl.id = le.program_enrolment_id
+  AND le.rn = 1
+  AND enl.observations::text not like '%be0ab05f-b0f3-43ec-b598-fdde0679104a%'
+  and program_id =341;
+
+------------------------------------------------------------------- Enrolment update end --------------------------------------------------------------------------------
+
+------------------------------------------------------------------- Individual update --------------------------------------------------------------------------------
+
+set role apfodishauat;
+
+-- Query to update individual table:
+UPDATE public.individual AS ind
+SET observations =
+        CASE
+            -- If there's a corresponding program enrolment, use its High risk value
+            WHEN pe.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' IS NOT NULL THEN
+                    ind.observations || JSONB_SET(ind.observations, '{"be0ab05f-b0f3-43ec-b598-fdde0679104a"}',
+                                                  pe.observations -> 'be0ab05f-b0f3-43ec-b598-fdde0679104a')
+            -- If there's no program enrolment, set High risk to no
+            ELSE
+                    ind.observations || '{"be0ab05f-b0f3-43ec-b598-fdde0679104a":["a77bd700-1409-4d52-93bc-9fe32c0e169b"]}'
+            END,
+    last_modified_date_time = now(),
+    last_modified_by_id = (select id from users where username ='nupoork@apfodishauat'),
+    manual_update_history = 'Fixing missing high risk sync attributes'
+FROM public.program_enrolment pe
+WHERE ind.id = pe.individual_id
+  AND subject_type_id = 557
+  AND ind.observations::text not like '%be0ab05f-b0f3-43ec-b598-fdde0679104a%';
+
+------------------------------------------------------------------- Individual update end--------------------------------------------------------------------------------
+
+------------------------------------------------------------------- Sync concpet1 value update --------------------------------------------------------------------------------
+
+
+set role apfodishauat;
+
+-- Query to update sync_concept_1_value column in the individual table
+UPDATE public.individual
+SET sync_concept_1_value =
+        CASE
+            WHEN observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' = 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+                THEN 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            WHEN observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                THEN '8ebbf088-f292-483e-9084-7de919ce67b7'
+            END,
+    last_modified_date_time = now(),
+    last_modified_by_id = (select id from users where username ='nupoork@apfodishauat'),
+    manual_update_history = 'Fixing missing high risk sync attributes'
+WHERE subject_type_id = 557
+  AND observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' IS NOT NULL;
+
+-- 4772
+
+-- Query to update sync_concept_1_value column in the program enrolment table
+UPDATE public.program_enrolment e
+SET sync_concept_1_value =
+        CASE
+            WHEN i.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' = 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+                THEN 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            WHEN i.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                THEN '8ebbf088-f292-483e-9084-7de919ce67b7'
+            END,
+    last_modified_date_time = now(),
+    last_modified_by_id = (select id from users where username ='nupoork@apfodishauat'),
+    manual_update_history = 'Fixing missing high risk sync attributes'
+FROM public.individual i
+WHERE i.id = e.individual_id
+  and subject_type_id = 557
+  AND i.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' IS NOT NULL;
+
+-- 2,400
+
+-- Query to update sync_concept_1_value column in the program encounter table
+UPDATE public.program_encounter enc
+SET sync_concept_1_value =
+        CASE
+            WHEN i.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' = 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+                THEN 'a77bd700-1409-4d52-93bc-9fe32c0e169b'
+            WHEN i.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' = '8ebbf088-f292-483e-9084-7de919ce67b7'
+                THEN '8ebbf088-f292-483e-9084-7de919ce67b7'
+            END,
+    last_modified_date_time = now(),
+    last_modified_by_id = (select id from users where username ='nupoork@apfodishauat'),
+    manual_update_history = 'Fixing missing high risk sync attributes'
+FROM public.individual i
+WHERE i.id = enc.individual_id
+  and subject_type_id = 557
+  AND i.observations ->> 'be0ab05f-b0f3-43ec-b598-fdde0679104a' IS NOT NULL;
+
+-- 5526
+
+
+
+------------------------------------------------------------------- Sync concpet1 value update end--------------------------------------------------------------------------------
+
+
 
 
 
