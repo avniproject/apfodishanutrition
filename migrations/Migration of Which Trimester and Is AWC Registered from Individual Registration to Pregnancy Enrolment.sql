@@ -26,8 +26,6 @@ with pregnancy_enrolments as (
         p.id = pe.program_id 
         and p.name = 'Pregnancy' 
         and p.is_voided = false
-    where 
-        i.is_voided = false
 )
 update program_enrolment pe
 set observations = pe.observations || jsonb_build_object('faa2d09f-6dd8-45ca-99ae-57fb2685abdd', preg_enrol.ind_observation -> 'faa2d09f-6dd8-45ca-99ae-57fb2685abdd') || jsonb_build_object('8d8a4d13-515a-4f3c-ac7e-04d22fd4782a', preg_enrol.ind_observation -> '8d8a4d13-515a-4f3c-ac7e-04d22fd4782a'),
