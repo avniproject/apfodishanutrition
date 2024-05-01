@@ -16,8 +16,6 @@ with pregnancy_enrolments as (
         pe.id as pe_id,
         pe.individual_id,
         i.observations as ind_observation,
-        pe.observations as pe_obs,
-        pe.enrolment_date_time,
         row_number() over (partition by pe.individual_id order by pe.enrolment_date_time desc) as latest_enrolment
     from 
         individual i 
