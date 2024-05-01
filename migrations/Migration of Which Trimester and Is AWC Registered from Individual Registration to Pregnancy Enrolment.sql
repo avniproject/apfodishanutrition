@@ -14,7 +14,6 @@ set role apfodisha;
 with pregnancy_enrolments as (
     select 
         pe.id as pe_id,
-        pe.individual_id,
         i.observations as ind_observation,
         row_number() over (partition by pe.individual_id order by pe.enrolment_date_time desc) as latest_enrolment
     from 
