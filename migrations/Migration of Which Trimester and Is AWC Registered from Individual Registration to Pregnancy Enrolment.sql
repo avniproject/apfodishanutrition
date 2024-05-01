@@ -1,10 +1,11 @@
-Data of two questions needs to be migrated from individual registration form to Pregnancy Enrolment Form. In case a women is enrolled multiple times into the Pregnancy Program, we need to take the latest data of the women for migration.
+-- Data of two questions needs to be migrated from individual registration form to Pregnancy Enrolment Form. 
+-- In case a women is enrolled multiple times into the Pregnancy Program, we need to take the latest data of the women for migration.
 
-2 Questions concept name with uuid's:
-which trimster -> 'faa2d09f-6dd8-45ca-99ae-57fb2685abdd'
-Is the beneficiary registered in the AWC? -> '8d8a4d13-515a-4f3c-ac7e-04d22fd4782a'
+-- 2 Questions concept name with uuid's:
+-- 1. which trimster -> 'faa2d09f-6dd8-45ca-99ae-57fb2685abdd'
+-- 2. Is the beneficiary registered in the AWC? -> '8d8a4d13-515a-4f3c-ac7e-04d22fd4782a'
 
-Note: Change the last_modified_by_id before 
+--Note: Change the last_modified_by_id before 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
