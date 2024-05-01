@@ -1,5 +1,6 @@
 -- Data of two questions needs to be migrated from individual registration form to Pregnancy Enrolment Form. 
 -- In case a women is enrolled multiple times into the Pregnancy Program, we need to take the latest data of the women for migration.
+-- We should not exclude the voided individuals.
 
 -- 2 Questions concept name with uuid's:
 -- 1. which trimster -> 'faa2d09f-6dd8-45ca-99ae-57fb2685abdd'
