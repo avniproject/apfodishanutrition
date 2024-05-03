@@ -30,7 +30,7 @@ with pregnancy_enrolments as (
 )
 update program_enrolment pe
 set observations = pe.observations || jsonb_build_object('faa2d09f-6dd8-45ca-99ae-57fb2685abdd', preg_enrol.ind_observation -> 'faa2d09f-6dd8-45ca-99ae-57fb2685abdd') || jsonb_build_object('8d8a4d13-515a-4f3c-ac7e-04d22fd4782a', preg_enrol.ind_observation -> '8d8a4d13-515a-4f3c-ac7e-04d22fd4782a'),
-	last_modified_date_time = current_timestamp + ((pe.id % 1000) * interval '1 millisecond'),
+	last_modified_date_time = current_timestamp + (random() * 5000 * (interval '1 millisecond')),
 	last_modified_by_id = 10917,
 	manual_update_history = append_manual_update_history(pe.manual_update_history, ' Migrating which trimester and Is the beneficiary registered in the AWC? from registration to pregnancy enrollment as per card #245')
 from pregnancy_enrolments preg_enrol
