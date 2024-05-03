@@ -20,21 +20,16 @@ select id from program p where p.name = 'Child' and p.is_voided = false; -- 489
 
 select id from encounter_type et where et.name = 'QRT Child' and et.is_voided = false; -- 1660
 
-select 
-	COUNT(*)
+select
+	* 
 from 
-    individual i 
-join program_enrolment pe on 
-    pe.individual_id = i.id 
-    and pe.program_exit_date_time is null 
-    and pe.is_voided = false
-    and pe.program_id = 489
-join program_encounter prog_enc on
-	prog_enc.program_enrolment_id = pe.id
-	and prog_enc.cancel_date_time is null
+	program_encounter prog_enc
+where 
+	prog_enc.cancel_date_time is null
 	and prog_enc.is_voided = false 
 	and prog_enc.encounter_date_time is not null
-	and prog_enc.encounter_type_id = 1660;
+	and prog_enc.encounter_type_id = 1660
+	and (prog_enc.observations -> '45113644-225c-43e9-8e31-b103732ea671')::TEXT = '"8ebbf088-f292-483e-9084-7de919ce67b7"';
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -46,21 +41,12 @@ select id from program p where p.name = 'Child' and p.is_voided = false; -- 489
 select id from encounter_type et where et.name = 'QRT Child' and et.is_voided = false; -- 1660
 
 update program_encounter prog_enc
-set observations = 
-	case 
-	    when (prog_enc.observations -> '45113644-225c-43e9-8e31-b103732ea671')::TEXT = '"8ebbf088-f292-483e-9084-7de919ce67b7"' then
-            prog_enc.observations || jsonb_build_object('4e04b445-61ff-45de-a48a-3b2fb362e2a6', 'a5e087e8-7ffa-4a0a-a4c0-d42579612e9c')
-        else prog_enc.observations
-    end,
-	last_modified_date_time = current_timestamp + ((prog_enc.id % 1000) * interval '1 millisecond'),
+set observations = prog_enc.observations || jsonb_build_object('4e04b445-61ff-45de-a48a-3b2fb362e2a6', 'a5e087e8-7ffa-4a0a-a4c0-d42579612e9c'),
+	last_modified_date_time = current_timestamp + (random() * 5000 * (interval '1 millisecond')),
 	last_modified_by_id = 10917,
 	manual_update_history = append_manual_update_history(prog_enc.manual_update_history, ' Migrating newly added advice as per card #249')
-from program_enrolment pe
-where pe.id = prog_enc.program_enrolment_id 
-	and pe.program_exit_date_time is null 
-    and pe.is_voided = false
-    and pe.program_id = 489
-    and prog_enc.cancel_date_time is null
+where prog_enc.cancel_date_time is null
 	and prog_enc.is_voided = false 
 	and prog_enc.encounter_date_time is not null
-	and prog_enc.encounter_type_id = 1660;
+	and prog_enc.encounter_type_id = 1660
+	and (prog_enc.observations -> '45113644-225c-43e9-8e31-b103732ea671')::TEXT = '"8ebbf088-f292-483e-9084-7de919ce67b7"';
