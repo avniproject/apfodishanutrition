@@ -10,7 +10,7 @@ with anc_data as (SELECT pe.id,
                          pe.observations,
                          pe.earliest_visit_date_time,
                          ROW_NUMBER()
-                         OVER (PARTITION BY pe.individual_id ORDER BY pe.earliest_visit_date_time asc NULLS LAST) AS visit_number
+                         OVER (PARTITION BY pe.program_enrolment_id ORDER BY pe.earliest_visit_date_time asc NULLS LAST) AS visit_number
                   FROM public.program_encounter pe
                            left join program_enrolment p on pe.program_enrolment_id = p.id
                   WHERE pe.encounter_type_id = (SELECT id
