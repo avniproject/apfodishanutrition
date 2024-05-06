@@ -10,7 +10,7 @@ with pnc_data as (SELECT id,
                          program_enrolment_id,
                          observations,
                          ROW_NUMBER()
-                         OVER (PARTITION BY pe.individual_id ORDER BY pe.earliest_visit_date_time asc NULLS LAST) AS visit_number
+                         OVER (PARTITION BY pe.program_enrolment_id ORDER BY pe.earliest_visit_date_time asc NULLS LAST) AS visit_number
                   FROM public.program_encounter pe
                   WHERE pe.encounter_type_id = (SELECT id
                                                 FROM encounter_type et
