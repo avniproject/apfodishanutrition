@@ -22,7 +22,7 @@ with anc_data as (SELECT pe.id,
                     and pe.encounter_date_time IS NOT NULL)
 
 update public.program_encounter anc
-set anc.observations = anc.observations || jsonb_build_object('a1012f45-fb96-4bd0-94cb-2714065e4367',
+set observations = anc.observations || jsonb_build_object('a1012f45-fb96-4bd0-94cb-2714065e4367',
                                                               p.observations ->
                                                               '5c3712c1-f570-4ce6-b5ed-c91e9088ef98'),
     last_modified_date_time = current_timestamp + (random() * 5000 * (interval '1 millisecond')),
