@@ -18,7 +18,7 @@ with pnc_data as (SELECT id,
                                                   AND et.is_voided = false)
                     AND pe.encounter_date_time IS NOT NULL)
 update public.program_encounter as pnc
-SET pnc.observations = pnc.observations || jsonb_build_object('3b6e00e3-b931-40aa-8af1-4416f7336650',
+SET observations = pnc.observations || jsonb_build_object('3b6e00e3-b931-40aa-8af1-4416f7336650',
                                                               delivery.observations ->
                                                               '3b6e00e3-b931-40aa-8af1-4416f7336650'),
     last_modified_date_time = current_timestamp + (random() * 5000 * (interval '1 millisecond')),
