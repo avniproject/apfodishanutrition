@@ -23,16 +23,16 @@ with anc_data as (SELECT pe.id,
 
 update public.program_encounter anc
 set observations = anc.observations || jsonb_build_object('a1012f45-fb96-4bd0-94cb-2714065e4367',
-                                                              p.observations ->
-                                                              '5c3712c1-f570-4ce6-b5ed-c91e9088ef98'),
-    last_modified_date_time = current_timestamp + (random() * 5000 * (interval '1 millisecond')),
-	  last_modified_by_id = (select id from users where username = 'nupoork@apfodisha'),
-	  manual_update_history = append_manual_update_history(pnc.manual_update_history, 'Data migration from program enrolment to 7th Month ANC')
-  
+                                                          p.observations ->
+                                                          '5c3712c1-f570-4ce6-b5ed-c91e9088ef98'),
+    last_modified_date_time = current_timestamp + (random()  5000  (interval '1 millisecond')),
+    last_modified_by_id = (select id from users where username = 'nupoork@apfodisha'),
+    manual_update_history = append_manual_update_history(anc.manual_update_history, 'Data migration from program enrolment to 7th Month ANC')
+
 from public.program_enrolment as p
-         left join anc_data on anc_data.id = anc.id
+         left join anc_data on anc_data.program_enrolment_id = p.id
 where anc_data.visit_number = 1
-  and anc.program_enrolment_id = p.id
+  and anc_data.id = anc.id
   and p.program_id = (select id from program where name = 'Pregnancy')
   and (p.observations -> '5c3712c1-f570-4ce6-b5ed-c91e9088ef98') is not null;
 
