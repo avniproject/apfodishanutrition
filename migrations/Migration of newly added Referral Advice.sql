@@ -34,6 +34,8 @@ where
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Update Query
+begin transaction;
+
 set role apfodisha;
 
 select id from program p where p.name = 'Child' and p.is_voided = false; -- 489
@@ -50,3 +52,6 @@ where prog_enc.cancel_date_time is null
 	and prog_enc.encounter_date_time is not null
 	and prog_enc.encounter_type_id = 1660
 	and (prog_enc.observations -> '45113644-225c-43e9-8e31-b103732ea671')::TEXT = '"8ebbf088-f292-483e-9084-7de919ce67b7"';
+
+rollback;
+-- commit;
