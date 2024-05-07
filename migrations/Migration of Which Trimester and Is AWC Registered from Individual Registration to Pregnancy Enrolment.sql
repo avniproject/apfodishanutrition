@@ -39,7 +39,7 @@ set observations = pe.observations || jsonb_build_object('faa2d09f-6dd8-45ca-99a
 from pregnancy_enrolments preg_enrol
 where
     preg_enrol.pe_id = pe.id
-    and preg_enrol.latest_enrolment = 1;
+    and preg_enrol.latest_enrolment = 1; -- 8892
 
 rollback;
 -- commit;
@@ -76,7 +76,7 @@ set observations = pe.observations || jsonb_build_object('8d8a4d13-515a-4f3c-ac7
 from pregnancy_enrolments preg_enrol
 where
     preg_enrol.pe_id = pe.id
-    and preg_enrol.latest_enrolment = 1;
+    and preg_enrol.latest_enrolment = 1; -- 11530
 
 rollback;
 -- commit;
