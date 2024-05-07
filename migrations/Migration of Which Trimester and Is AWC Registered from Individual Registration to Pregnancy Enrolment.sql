@@ -9,6 +9,7 @@
 --Note: Change the last_modified_by_id before 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+begin transaction;
 
 set role apfodisha;
 
@@ -37,3 +38,6 @@ from pregnancy_enrolments preg_enrol
 where
     preg_enrol.pe_id = pe.id
     and preg_enrol.latest_enrolment = 1;
+
+rollback;
+-- commit;
