@@ -4,8 +4,6 @@
 
 set role apfodisha;
 
-begin transaction;
-
 -- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Select query to get the count of 2nd PNC which will be updated from the script
@@ -32,6 +30,8 @@ where pnc_data.visit_number = 2
 
 -- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- update query
+
+begin transaction;
 
 with pnc_data as (SELECT id,
                          program_enrolment_id,
