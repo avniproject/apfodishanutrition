@@ -29,7 +29,7 @@ with pregnancy_enrolments as (
         p.id = pe.program_id 
         and p.name = 'Pregnancy' 
         and p.is_voided = false
-	and i.observations -> 'faa2d09f-6dd8-45ca-99ae-57fb2685abdd' is not null
+	and i.observations -> 'faa2d09f-6dd8-45ca-99ae-57fb2685abdd' is not null -- 8893
 )
 update program_enrolment pe
 set observations = pe.observations || jsonb_build_object('faa2d09f-6dd8-45ca-99ae-57fb2685abdd', preg_enrol.ind_observation -> 'faa2d09f-6dd8-45ca-99ae-57fb2685abdd'),
@@ -66,7 +66,7 @@ with pregnancy_enrolments as (
         p.id = pe.program_id 
         and p.name = 'Pregnancy' 
         and p.is_voided = false
-	and i.observations -> '8d8a4d13-515a-4f3c-ac7e-04d22fd4782a' is not null
+	and i.observations -> '8d8a4d13-515a-4f3c-ac7e-04d22fd4782a' is not null -- 11531
 )
 update program_enrolment pe
 set observations = pe.observations || jsonb_build_object('8d8a4d13-515a-4f3c-ac7e-04d22fd4782a', preg_enrol.ind_observation -> '8d8a4d13-515a-4f3c-ac7e-04d22fd4782a'),
