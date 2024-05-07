@@ -3,6 +3,7 @@
 
 set role apfodisha;
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Select query to get all the ANC that will be updated
 with anc_data as (SELECT pe.id,
                          pe.program_enrolment_id,
@@ -27,6 +28,9 @@ where anc_data.visit_number = 1
   and anc.program_enrolment_id = p.id
   and p.program_id = (select id from program where name = 'Pregnancy')
   and (p.observations -> '5c3712c1-f570-4ce6-b5ed-c91e9088ef98') is not null;
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- update query
 
 begin transaction;
 
@@ -58,6 +62,7 @@ from public.program_enrolment as p
          left join anc_data on anc_data.program_enrolment_id = p.id
 where anc_data.visit_number = 1
   and anc_data.id = anc.id
+  and anc.program_enrolment_id = p.id
   and p.program_id = (select id from program where name = 'Pregnancy')
   and (p.observations -> '5c3712c1-f570-4ce6-b5ed-c91e9088ef98') is not null;
 
