@@ -3,6 +3,31 @@
 
 set role apfodisha;
 
+-- Select query to get all the ANC that will be updated
+with anc_data as (SELECT pe.id,
+                         pe.program_enrolment_id,
+                         pe.observations,
+                         pe.earliest_visit_date_time,
+                         ROW_NUMBER()
+                         OVER (PARTITION BY pe.program_enrolment_id ORDER BY pe.earliest_visit_date_time asc NULLS LAST) AS visit_number
+                  FROM public.program_encounter pe
+                           left join program_enrolment p on pe.program_enrolment_id = p.id
+                  WHERE pe.encounter_type_id = (SELECT id
+                                                FROM encounter_type et
+                                                WHERE et.name = 'ANC'
+                                                  AND et.is_voided = false)
+                    and EXTRACT(MONTH FROM (p.observations ->> '2664c7be-7467-4304-811f-d9d20dcd7eae')::date +
+                                           INTERVAL '6 months') = EXTRACT(MONTH FROM pe.earliest_visit_date_time)
+                    and pe.encounter_date_time IS NOT NULL)
+select count(distinct anc.id)
+    from public.program_encounter anc
+         join public.program_enrolment as p on anc.program_enrolment_id = p.id
+         join anc_data on anc_data.id = anc.id
+where anc_data.visit_number = 1
+  and anc.program_enrolment_id = p.id
+  and p.program_id = (select id from program where name = 'Pregnancy')
+  and (p.observations -> '5c3712c1-f570-4ce6-b5ed-c91e9088ef98') is not null;
+
 begin transaction;
 
 with anc_data as (SELECT pe.id,
