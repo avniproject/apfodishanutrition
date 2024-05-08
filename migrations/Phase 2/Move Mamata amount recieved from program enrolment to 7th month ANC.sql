@@ -54,7 +54,7 @@ update public.program_encounter anc
 set observations = anc.observations || jsonb_build_object('a1012f45-fb96-4bd0-94cb-2714065e4367',
                                                           p.observations ->
                                                           '5c3712c1-f570-4ce6-b5ed-c91e9088ef98'),
-    last_modified_date_time = current_timestamp + (random()  5000  (interval '1 millisecond')),
+    last_modified_date_time = current_timestamp + (random() * 5000 * (interval '1 millisecond')),
     last_modified_by_id = (select id from users where username = 'nupoork@apfodisha'),
     manual_update_history = append_manual_update_history(anc.manual_update_history, 'Data migration from program enrolment to 7th Month ANC')
 
