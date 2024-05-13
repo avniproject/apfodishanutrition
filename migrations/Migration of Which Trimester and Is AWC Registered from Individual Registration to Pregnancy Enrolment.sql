@@ -6,7 +6,7 @@
 -- 1. which trimster -> 'faa2d09f-6dd8-45ca-99ae-57fb2685abdd'
 -- 2. Is the beneficiary registered in the AWC? -> '8d8a4d13-515a-4f3c-ac7e-04d22fd4782a'
 
---Note: Change the last_modified_by_id before 
+--Note: Change the last_modified_by_id before running the script.
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Update Script for "WHICH TRIMESTER"
