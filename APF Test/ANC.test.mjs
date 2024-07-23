@@ -1,5 +1,6 @@
 import {expect} from 'chai';
 import {funcToCheckANCScheduling} from './Test.mjs';
+import {funcToCheckGrwothMonitoringScheduling} from './Test.mjs';
 
 describe('Scheduling', () => {
 
@@ -35,4 +36,51 @@ describe('Scheduling', () => {
     it('Scheduling post ANC', () => {
         expect(funcToCheckANCScheduling(true, true, true, false, true, 1, true, true)).to.equal('ANC - 1st of the next month : QRT PW Visit - Immediately : PW Home Visit - No');
     });
+
+    // Growth Monitoring
+    // Case 1
+    it('Scheduling post Growth Monitoring', () => {
+        expect(funcToCheckGrwothMonitoringScheduling(2, true, true, true)).to.equal('Growth Monitoring - 1st of next month from current visit\'s scheduled date : QRT Child - Scheduled date of Growth Monitoring, Overdue - Last day of the month : Child Home Visit - No');
+    });
+
+    // Case 2
+    it('Scheduling post Growth Monitoring', () => {
+        expect(funcToCheckGrwothMonitoringScheduling(5.1, true, true, true)).to.equal('Growth Monitoring - No : QRT Child - No : Child Home Visit - No');
+    });
+
+    // Case 3
+    it('Scheduling post Growth Monitoring', () => {
+        expect(funcToCheckGrwothMonitoringScheduling(2, true, false, true)).to.equal('Growth Monitoring - 1st of next month from current visit\'s scheduled date : QRT Child - Scheduled date of Growth Monitoring, Overdue - Last day of the month : Child Home Visit - No');
+    });
+
+    // Case 4
+    it('Scheduling post Growth Monitoring', () => {
+        expect(funcToCheckGrwothMonitoringScheduling(2, false, false, false)).to.equal('Growth Monitoring - 1st of next month from current visit\'s scheduled date : QRT Child - Scheduled date of Growth Monitoring, Overdue - Last day of the month : Child Home Visit - No');
+    });
+
+    // Case 5
+    it('Scheduling post Growth Monitoring', () => {
+        expect(funcToCheckGrwothMonitoringScheduling(2, false, false, true)).to.equal('Growth Monitoring - 1st of next month from current visit\'s scheduled date : QRT Child - No : Child Home Visit - Completion date of Growth Monitoring + 15 days, Overdue - Schedule + 7 days');
+    });
+
+    // Case 6
+    it('Scheduling post Growth Monitoring', () => {
+        expect(funcToCheckGrwothMonitoringScheduling(2, false, true, false)).to.equal('Growth Monitoring - 1st of next month from current visit\'s scheduled date : QRT Child - Scheduled date of Growth Monitoring, Overdue - Last day of the month : Child Home Visit - No');
+    });
+
+    // Case 7
+    it('Scheduling post Growth Monitoring', () => {
+        expect(funcToCheckGrwothMonitoringScheduling(2, false, true, true)).to.equal('Growth Monitoring - 1st of next month from current visit\'s scheduled date : QRT Child - No : Child Home Visit - Completion date of Growth Monitoring + 15 days, Overdue - Schedule + 7 days');
+    });
+
+    // Case 8
+    it('Scheduling post Growth Monitoring', () => {
+        expect(funcToCheckGrwothMonitoringScheduling(2, false, true, true)).to.equal('Growth Monitoring - 1st of next month from current visit\'s scheduled date : QRT Child - No : Child Home Visit - Completion date of Growth Monitoring + 15 days, Overdue - Schedule + 7 days');
+    });
+
+    // Case 8
+    it('Scheduling post Growth Monitoring', () => {
+        expect(funcToCheckGrwothMonitoringScheduling(2, false, false, undefined)).to.equal('Growth Monitoring - 1st of next month from current visit\'s scheduled date : QRT Child - No : Child Home Visit - No');
+    });
+
 });
