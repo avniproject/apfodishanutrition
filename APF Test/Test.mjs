@@ -1,21 +1,27 @@
-export const funcToCheckANCScheduling = (GeographicHighRisk, ClinicallyHighRisk, ANMRecommended, MedicalFacilityIntervention, SevereAnameic, ANCNumber, currentlyActiveInProgram, isDeliveryEncounterIncomplete) => {
+export const funcToCheckANCScheduling = (GeographicHighRisk, ClinicallyHighRisk, ANMRecommended, MedicalFacilityIntervention, SevereAnameic, ANCNumber, currentlyActiveInProgram, isDeliveryEncounterIncomplete, IsEditScenario, noAncEncountersScheduledOnFirstOfNextMonth) => {
+    //const qrtDate = moment(programEncounter.encounterDateTime).toDate();
+    //const noQrtEncountersScheduled = scheduledOrCompletedEncountersOfType("QRT PW", qrtDate).length == 0;
+    const isSevereAnemic = SevereAnameic;
+    const requiresMedicalInterventionTreatment = MedicalFacilityIntervention;
+    const anmRecommendedMedicalFacilityIntervention = ANMRecommended;
+    const qrtEligibility = isSevereAnemic || requiresMedicalInterventionTreatment || anmRecommendedMedicalFacilityIntervention ;
+   // const ancEncounter = lastfilledEncounter('ANC');
+    const isEditScenario = IsEditScenario;
+    const isHighRiskCondition = ClinicallyHighRisk;
     let result = '';
-    const qrtEligibility = SevereAnameic || ANMRecommended || MedicalFacilityIntervention;
 
-    if (currentlyActiveInProgram && isDeliveryEncounterIncomplete) {
+    if(currentlyActiveInProgram && isDeliveryEncounterIncomplete && noAncEncountersScheduledOnFirstOfNextMonth){
         result = result + 'ANC - 1st of the next month';
     } else {
         result = result + 'ANC Visit - No';
     }
-
-    if (qrtEligibility) {
-        // noQrtEncountersScheduled
+    // noQrtEncountersScheduled &&
+    if(qrtEligibility){
         result = result + ' : QRT PW Visit - Immediately';
         result = result + ' : PW Home Visit - No';
-    } else if (ClinicallyHighRisk && !MedicalFacilityIntervention && !ANMRecommended) {
-        //     !isEditScenario
+    }else if (!isEditScenario && isHighRiskCondition && !requiresMedicalInterventionTreatment && !anmRecommendedMedicalFacilityIntervention){
         result = result + ' : QRT PW Visit - No';
-        result = result + ' : PW Home Visit - 1st of next month from encounter date'
+        result = result + ' : PW Home Visit - 1st of next month from encounter date';
     } else {
         result = result + ' : QRT PW Visit - No';
         result = result + ' : PW Home Visit - No';
