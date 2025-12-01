@@ -70,6 +70,7 @@ UPDATE
 	program_encounter pe
 SET
 	is_voided = TRUE,
+	manual_update_history = append_manual_update_history(pe.manual_update_history, 'Voiding the duplicated visit as per support ticket #7075'),
 	last_modified_date_time = current_timestamp + (random() * 5000 * (interval '1 millisecond')),
 	last_modified_by_id = 10917
 FROM
@@ -160,6 +161,7 @@ UPDATE
 	program_encounter pe
 SET
 	is_voided = TRUE,
+	manual_update_history = append_manual_update_history(pe.manual_update_history, 'Voiding the duplicated visit as per support ticket #7075'),
 	last_modified_date_time = current_timestamp + (random() * 5000 * (interval '1 millisecond')),
 	last_modified_by_id = 10917
 FROM
